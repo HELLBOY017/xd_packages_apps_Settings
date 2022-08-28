@@ -215,4 +215,7 @@
     <!-- Charging animation -->
     <string name="charging_animation_title">Charging animation</string>
     <string name="charging_animation_summary">Display an animation when the device is plugged in</string>
+    <!-- Immersive gestures -->
+    <string name="immersive_gestures_title">Immersive gestures</string>
+    <string name="immersive_gestures_summary">Remove navigation bar height while keeping the gesture pill</string>
 </resources>

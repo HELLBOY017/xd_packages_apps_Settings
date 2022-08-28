@@ -18,6 +18,8 @@ package com.android.settings.gestures;
 
 import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL_OVERLAY;
 
+import androidx.preference.SwitchPreference;
+
 import android.app.settings.SettingsEnums;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -56,6 +58,9 @@ public class GestureNavigationSettingsFragment extends DashboardFragment {
 
     private static final String FULLSCREEN_GESTURE_PREF_KEY = "fullscreen_gestures";
     private static final String FULLSCREEN_GESTURE_OVERLAY_PKG = "com.xd.overlay.systemui.navbar.gestural";
+    
+    private static final String IMMERSIVE_GESTURE_PREF_KEY = "immersive_gestures";
+    private static final String IMMERSIVE_GESTURE_OVERLAY_PKG = "com.xd.overlay.systemui.navbar_immersive.gestural";
 
     private WindowManager mWindowManager;
     private BackGestureIndicatorView mIndicatorView;
@@ -96,6 +101,7 @@ public class GestureNavigationSettingsFragment extends DashboardFragment {
 
         initGestureNavbarLengthPreference();
         initFullscreenGesturePreference();
+        initImmersiveGesturePreference();
     }
 
     @Override
@@ -176,12 +182,35 @@ public class GestureNavigationSettingsFragment extends DashboardFragment {
             .setOnPreferenceChangeListener((pref, newValue) -> {
                 final boolean isChecked = (boolean) newValue;
                 mGestureNavbarLengthPreference.setEnabled(!isChecked);
+                SwitchPreference immersive = (SwitchPreference) findPreference(IMMERSIVE_GESTURE_PREF_KEY);
                 try {
                     mOverlayManager.setEnabledExclusiveInCategory(
                         isChecked ? FULLSCREEN_GESTURE_OVERLAY_PKG : NAV_BAR_MODE_GESTURAL_OVERLAY,
                         UserHandle.USER_CURRENT);
                 } catch (RemoteException e) {
                     Log.e(TAG, "RemoteException while setting fullscreen gesture overlay");
+                }
+                if (isChecked) {
+                immersive.setChecked(false);
+                }
+                return true;
+            });
+    }
+    
+    private void initImmersiveGesturePreference() {
+        findPreference(IMMERSIVE_GESTURE_PREF_KEY)
+            .setOnPreferenceChangeListener((pref, newValue) -> {
+                final boolean isChecked = (boolean) newValue;
+                SwitchPreference fullscreen = (SwitchPreference) findPreference(FULLSCREEN_GESTURE_PREF_KEY);
+                try {
+                    mOverlayManager.setEnabledExclusiveInCategory(
+                        isChecked ? IMMERSIVE_GESTURE_OVERLAY_PKG : NAV_BAR_MODE_GESTURAL_OVERLAY,
+                        UserHandle.USER_CURRENT);
+                } catch (RemoteException e) {
+                    Log.e(TAG, "RemoteException while setting immersive gesture overlay");
+                }
+                if (isChecked) {
+                fullscreen.setChecked(false);
                 }
                 return true;
             });

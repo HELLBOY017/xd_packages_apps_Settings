@@ -77,6 +77,8 @@ public class SystemNavigationGestureSettings extends RadioButtonPickerFragment i
     private boolean mA11yTutorialDialogShown = false;
 
     private static final String FULLSCREEN_GESTURE_OVERLAY_PKG = "com.xd.overlay.systemui.navbar.gestural";
+    
+    private static final String IMMERSIVE_GESTURE_OVERLAY_PKG = "com.xd.overlay.systemui.navbar_immersive.gestural";
 
     private IOverlayManager mOverlayManager;
 
@@ -225,10 +227,15 @@ public class SystemNavigationGestureSettings extends RadioButtonPickerFragment i
         }
 
         OverlayInfo info = null;
+        OverlayInfo fullscreenOverlayInfo = null;
+        OverlayInfo immersiveOverlayInfo = null;
         try {
             info = overlayManager.getOverlayInfo(NAV_BAR_MODE_GESTURAL_OVERLAY, USER_CURRENT);
+            fullscreenOverlayInfo = overlayManager.getOverlayInfo(FULLSCREEN_GESTURE_OVERLAY_PKG, USER_CURRENT);
+            immersiveOverlayInfo = overlayManager.getOverlayInfo(IMMERSIVE_GESTURE_OVERLAY_PKG, USER_CURRENT);
         } catch (RemoteException e) { /* Do nothing */ }
-        if (info != null && !info.isEnabled()) {
+        if (info != null && !info.isEnabled() &&
+                (fullscreenOverlayInfo == null || !fullscreenOverlayInfo.isEnabled()) && (immersiveOverlayInfo == null || !immersiveOverlayInfo.isEnabled())) {
             // Enable the default gesture nav overlay. Back sensitivity for left and right are
             // stored as separate settings values, and other gesture nav overlays are deprecated.
             setCurrentSystemNavigationMode(context, overlayManager, KEY_SYSTEM_NAV_GESTURAL);
@@ -257,7 +264,18 @@ public class SystemNavigationGestureSettings extends RadioButtonPickerFragment i
                 final boolean fullscreen = Settings.System.getIntForUser(context.getContentResolver(),
                     Settings.System.FULLSCREEN_GESTURES, 0,
                     USER_CURRENT) == 1;
-                overlayPackage = fullscreen ? FULLSCREEN_GESTURE_OVERLAY_PKG : NAV_BAR_MODE_GESTURAL_OVERLAY;
+                final boolean immersive = Settings.System.getIntForUser(context.getContentResolver(),
+                    Settings.System.IMMERSIVE_GESTURES, 0,
+                    USER_CURRENT) == 1;
+                if (fullscreen) {
+                	overlayPackage = FULLSCREEN_GESTURE_OVERLAY_PKG;
+                }
+                else if (immersive) {
+                	overlayPackage = IMMERSIVE_GESTURE_OVERLAY_PKG;
+                }
+                else {
+                	overlayPackage = NAV_BAR_MODE_GESTURAL_OVERLAY; 
+                }
                 break;
             case KEY_SYSTEM_NAV_2BUTTONS:
                 overlayPackage = NAV_BAR_MODE_2BUTTON_OVERLAY;
